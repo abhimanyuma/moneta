@@ -46,7 +46,7 @@ fn handle_commands(stream: &TcpStream, commands:&mut VecDeque<&str>) {
     }
 }
 
-fn handle_connection(mut stream: TcpStream) {
+fn handle_connection(mut stream: &TcpStream) {
     let mut buffer= [0; 128];
     stream.read(&mut buffer);
     let buffer_str = str::from_utf8(&buffer).unwrap();
@@ -63,12 +63,14 @@ fn main() {
     println!("Starting a mock redis server");
 
     for stream in listener.incoming() {
-        match stream {
-            Ok(stream) => {
-                handle_connection(stream);
-            }
-            Err(e) => {
-                println!("error: {}", e);
+        loop {
+            match stream {
+                Ok(ref stream) => {
+                    handle_connection(&stream);
+                }
+                Err(ref e) => {
+                    println!("error: {}", &e);
+                }
             }
         }
     }
